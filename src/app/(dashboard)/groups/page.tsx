@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CalendarDays, Clock3, MapPin, UserRound, UsersRound } from "lucide-react";
 import type { WeekDay } from "@/generated/prisma/enums";
 import { requireRole } from "@/features/auth/session";
+import { getSupportStartTime } from "@/features/support/utils";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
@@ -16,8 +17,9 @@ const weekDayLabels: Record<WeekDay, string> = { MONDAY: "Dush", TUESDAY: "Sesh"
 export default async function GroupsPage() {
   const user = await requireRole("ADMIN", "TEACHER");
   const isTeacher = user.role === "TEACHER";
+  const isSupport = isTeacher && user.jobTitle !== "Ustoz";
   const groups = await db.group.findMany({
-    where: { status: "ACTIVE", ...(isTeacher ? { teacherId: user.id } : {}) },
+    where: { status: "ACTIVE", ...(isTeacher && !isSupport ? { teacherId: user.id } : {}) },
     select: {
       id: true,
       name: true,
@@ -29,7 +31,12 @@ export default async function GroupsPage() {
       course: { select: { name: true } },
       teacher: { select: { fullName: true } },
       students: { where: { leftAt: null }, select: { student: { select: { id: true, fullName: true } } }, orderBy: { joinedAt: "asc" } },
-      lessons: { select: { attendance: { select: { studentId: true, status: true } } } },
+      lessons: {
+        select: {
+          attendance: { select: { studentId: true, status: true } },
+          supportSignups: { select: { studentId: true, student: { select: { fullName: true } } } },
+        },
+      },
     },
     orderBy: [{ teacher: { fullName: "asc" } }, { name: "asc" }],
   });
@@ -37,8 +44,8 @@ export default async function GroupsPage() {
 
   return (
     <div>
-      <PageHeader title={isTeacher ? "Guruhlarim" : "Guruhlar"} description={isTeacher ? "Sizga biriktirilgan faol guruhlar va o‘quvchilar ro‘yxati." : "Ustoz, dars jadvali va o‘quvchilar bo‘yicha barcha faol guruhlar."} action={<Badge variant="secondary" className="px-3 py-1.5"><UsersRound />{groups.length} guruh · {studentCount} o‘quvchi</Badge>} />
-      {groups.length ? <div className="grid gap-4 xl:grid-cols-2">{groups.map((group) => <Card key={group.id} className="p-5"><div className="flex items-start justify-between gap-3"><div><Badge variant="default">{group.course.name}</Badge><h2 className="mt-3 text-base font-semibold leading-6">{group.name}</h2></div><Badge variant="success">{group.students.length} o‘quvchi</Badge></div><div className="mt-4 grid gap-2.5 text-sm text-muted-foreground sm:grid-cols-2"><p className="flex items-center gap-2"><UserRound className="size-4" />{group.teacher.fullName}</p><p className="flex items-center gap-2"><CalendarDays className="size-4" />{group.weekDays.map((day) => weekDayLabels[day]).join(" · ")}</p><p className="flex items-center gap-2"><Clock3 className="size-4" />{group.startTime}{group.endTime ? `–${group.endTime}` : ""}</p><p className="flex items-center gap-2"><MapPin className="size-4" />{group.room ?? "Xona ko‘rsatilmagan"}</p></div><div className="mt-5 border-t border-border pt-4"><div className="mb-3 flex items-center justify-between text-xs text-muted-foreground"><span>O‘quvchilar</span><span>Boshlanish: {formatDate(group.startDate)}</span></div>{group.students.length ? <ul className="space-y-2">{group.students.slice(0, 5).map((membership) => {
+      <PageHeader title={isSupport ? "Support guruhlari" : isTeacher ? "Guruhlarim" : "Guruhlar"} description={isSupport ? "Barcha ustozlarning guruhlari va support darslari. Supportda davomat olinmaydi." : isTeacher ? "Sizga biriktirilgan faol guruhlar va o‘quvchilar ro‘yxati." : "Ustoz, dars jadvali va o‘quvchilar bo‘yicha barcha faol guruhlar."} action={<Badge variant="secondary" className="px-3 py-1.5"><UsersRound />{groups.length} guruh · {studentCount} o‘quvchi</Badge>} />
+      {groups.length ? <div className="grid gap-4 xl:grid-cols-2">{groups.map((group) => <Card key={group.id} className="p-5"><div className="flex items-start justify-between gap-3"><div><Badge variant="default">{group.course.name}</Badge><h2 className="mt-3 text-base font-semibold leading-6">{group.name}</h2></div><Badge variant="success">{group.students.length} o‘quvchi</Badge></div><div className="mt-4 grid gap-2.5 text-sm text-muted-foreground sm:grid-cols-2"><p className="flex items-center gap-2"><UserRound className="size-4" />{group.teacher.fullName}</p><p className="flex items-center gap-2"><CalendarDays className="size-4" />{group.weekDays.map((day) => weekDayLabels[day]).join(" · ")}</p><p className="flex items-center gap-2"><Clock3 className="size-4" />{group.startTime}{group.endTime ? `–${group.endTime}` : ""}</p><p className="flex items-center gap-2"><MapPin className="size-4" />{group.room ?? "Xona ko‘rsatilmagan"}</p></div>{isSupport && <div className="mt-4 rounded-lg bg-primary/10 p-3 text-xs font-medium text-primary">Support: {getSupportStartTime(group.endTime) ?? "Vaqt belgilanmagan"} · {group.lessons.reduce((total, lesson) => total + lesson.supportSignups.length, 0)} o‘quvchi yozilgan</div>}<div className="mt-5 border-t border-border pt-4"><div className="mb-3 flex items-center justify-between text-xs text-muted-foreground"><span>O‘quvchilar</span><span>Boshlanish: {formatDate(group.startDate)}</span></div>{group.students.length ? <ul className="space-y-2">{group.students.slice(0, 5).map((membership) => {
   const records = group.lessons.flatMap((lesson) => lesson.attendance).filter((record) => record.studentId === membership.student.id);
   const attended = records.filter((record) => record.status === "PRESENT" || record.status === "LATE").length;
   return <li key={membership.student.id} className="flex items-center gap-2 text-sm"><span className="size-1.5 rounded-full bg-primary/60" /><span className="flex-1">{membership.student.fullName}</span><span className="text-xs tabular-nums text-muted-foreground">{records.length ? `${Math.round((attended / records.length) * 100)}%` : "—"}</span></li>;

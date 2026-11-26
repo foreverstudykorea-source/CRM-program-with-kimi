@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { parse } from "csv-parse/sync";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.js";
+import { addMinutesToTime } from "../src/features/support/utils.js";
 import { GroupStatus, Role, StudentPaymentStatus, WeekDay } from "../src/generated/prisma/enums.js";
 
 const csvPath = process.argv.find((argument) => argument.endsWith(".csv")) ?? ".tools/forever-staff.csv";
@@ -247,7 +248,7 @@ async function main() {
           teacherId,
           weekDays: group.weekDays,
           startTime: group.startTime,
-          endTime: null,
+          endTime: addMinutesToTime(group.startTime, 90),
           room: null,
           startDate: group.startDate,
           status: GroupStatus.ACTIVE,
@@ -259,6 +260,7 @@ async function main() {
           teacherId,
           weekDays: group.weekDays,
           startTime: group.startTime,
+          endTime: addMinutesToTime(group.startTime, 90),
           room: null,
           startDate: group.startDate,
           status: GroupStatus.ACTIVE,

@@ -18,6 +18,9 @@
 /.postgres/
 /.data/
 
+# generated Prisma client
+/src/generated/prisma/
+
 # next.js
 /.next/
 /out/

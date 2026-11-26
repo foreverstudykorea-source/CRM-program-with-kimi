@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createSession, destroySession, getCurrentUser } from "@/features/auth/session";
 import { loginSchema, type LoginActionResult, type LoginFormValues } from "@/features/auth/schemas";
+import { logAuthError } from "@/features/auth/error-log";
 
 const WINDOW_MS = 15 * 60 * 1000;
 const dummyPasswordHash = bcrypt.hashSync("forever-study-dummy-password", 12);
@@ -74,6 +75,7 @@ export async function loginAction(input: LoginFormValues, nextPath?: string): Pr
     ]);
     await createSession(user.id);
   } catch (error) {
+    await logAuthError(error).catch(() => undefined);
     console.error("Login failed", error);
     if ((error as { code?: string }).code === "ECONNREFUSED") {
       return { error: "Ma’lumotlar bazasiga ulanib bo‘lmadi. Birozdan keyin qayta urinib ko‘ring." };

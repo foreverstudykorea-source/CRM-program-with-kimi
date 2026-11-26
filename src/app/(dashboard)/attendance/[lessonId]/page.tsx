@@ -7,6 +7,8 @@ import { AttendanceForm } from "@/features/attendance/attendance-form";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
+import { getTeacherLocale } from "@/features/i18n/server-locale";
+import { teacherText } from "@/features/i18n/teacher-dictionary";
 import { formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Davomat belgilash" };
@@ -14,6 +16,8 @@ export const metadata: Metadata = { title: "Davomat belgilash" };
 export default async function LessonAttendancePage({ params }: { params: Promise<{ lessonId: string }> }) {
   const { lessonId } = await params;
   const user = await requireUser();
+  const locale = await getTeacherLocale(user);
+  const t = (text: string) => teacherText(locale, text);
   if (user.role !== "TEACHER" && user.role !== "ADMIN") redirect("/");
   if (user.role === "TEACHER" && user.jobTitle !== "Ustoz") redirect("/");
 
@@ -44,16 +48,16 @@ export default async function LessonAttendancePage({ params }: { params: Promise
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
-        <div className="mb-3 flex flex-wrap items-center gap-2"><Badge variant="secondary">{lesson.group.course.name}</Badge><Badge variant={canEdit ? "default" : "outline"}>{canEdit ? "Tahrirlash mumkin" : "Faqat o‘qish"}</Badge></div>
+        <div className="mb-3 flex flex-wrap items-center gap-2"><Badge variant="secondary">{lesson.group.course.name}</Badge><Badge variant={canEdit ? "default" : "outline"}>{canEdit ? t("Tahrirlash mumkin") : t("Faqat o‘qish")}</Badge></div>
         <h1 className="text-xl font-semibold leading-7 tracking-[-0.02em] sm:text-2xl">{lesson.group.name}</h1>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground sm:text-sm">
           <span className="inline-flex items-center gap-1.5"><CalendarDays className="size-4" />{formatDate(lesson.date)}</span>
           <span className="inline-flex items-center gap-1.5"><Clock3 className="size-4" />{lesson.group.startTime}{lesson.group.endTime ? `–${lesson.group.endTime}` : ""}</span>
-          <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" />{lesson.group.room ?? "Xona ko‘rsatilmagan"}</span>
+          <span className="inline-flex items-center gap-1.5"><MapPin className="size-4" />{lesson.group.room ?? t("Xona ko‘rsatilmagan")}</span>
           <span className="inline-flex items-center gap-1.5"><BookOpen className="size-4" />{lesson.group.teacher.fullName}</span>
         </div>
       </div>
-      {students.length ? <AttendanceForm key={lesson.id} lessonId={lesson.id} students={students} canEdit={canEdit} /> : <EmptyState icon={UsersRound} title="Guruhda o‘quvchi yo‘q" description="Bu dars sanasida guruhga biriktirilgan faol o‘quvchilar mavjud emas." />}
+      {students.length ? <AttendanceForm key={lesson.id} lessonId={lesson.id} students={students} canEdit={canEdit} /> : <EmptyState icon={UsersRound} title={t("Guruhda o‘quvchi yo‘q")} description={t("Bu dars sanasida guruhga biriktirilgan faol o‘quvchilar mavjud emas.")} />}
     </div>
   );
 }

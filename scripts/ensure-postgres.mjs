@@ -7,7 +7,7 @@ const root = process.cwd();
 const executable = path.join(root, ".tools", "postgres", "bin", "pg_ctl.exe");
 const dataDirectory = path.join(root, ".postgres", "data");
 const logFile = path.join(root, ".postgres", "postgres.log");
-const connectionString = process.env.DATABASE_URL ?? "postgresql://forever:forever@localhost:5432/forever_study?schema=public";
+const connectionString = process.env.DATABASE_URL || "postgresql://forever:forever@localhost:5432/forever_study?schema=public";
 
 async function canConnect() {
   const client = new pg.Client({ connectionString, connectionTimeoutMillis: 1500 });

@@ -17,6 +17,7 @@ export const navigation: NavItem[] = [
   { label: "Uy vazifalari", href: "/homework", icon: BookOpenCheck, roles: ["STUDENT", "TEACHER"], section: "Asosiy" },
   { label: "Xabarlar", href: "/messages", icon: Mail, roles: ["STUDENT", "ADMIN", "FINANCE"], section: "Asosiy" },
   { label: "Guruhlarim", href: "/groups", icon: UsersRound, roles: ["TEACHER"], section: "Asosiy" },
+  { label: "Support darslari", href: "/support", icon: CalendarCheck2, roles: ["STUDENT", "TEACHER"], section: "Asosiy" },
   { label: "O‘quvchilar", href: "/students", icon: GraduationCap, roles: ["ADMIN"], section: "Boshqaruv" },
   { label: "Xodimlar", href: "/teachers", icon: UserRoundCog, roles: ["ADMIN"], section: "Boshqaruv" },
   { label: "Guruhlar", href: "/groups", icon: UsersRound, roles: ["ADMIN"], section: "Boshqaruv" },
@@ -37,7 +38,7 @@ export const roleLabels: Record<Role, string> = {
 };
 
 export function getNavigation(role: Role, jobTitle?: string | null) {
-  return navigation.filter((item) => item.roles.includes(role) && !(role === "TEACHER" && jobTitle && jobTitle !== "Ustoz" && item.href === "/attendance"));
+  return navigation.filter((item) => item.roles.includes(role) && !(role === "TEACHER" && jobTitle && jobTitle !== "Ustoz" && item.href === "/attendance") && !(role === "TEACHER" && jobTitle === "Ustoz" && item.href === "/support"));
 }
 
 export function canAccessPath(role: Role, pathname: string) {

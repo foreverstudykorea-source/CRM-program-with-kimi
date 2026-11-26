@@ -2,10 +2,12 @@ import { Suspense } from "react";
 import { requireUser } from "@/features/auth/session";
 import { AppShell } from "@/components/layout/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getTeacherLocale } from "@/features/i18n/server-locale";
 
 async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
-  return <AppShell user={user}>{children}</AppShell>;
+  const locale = await getTeacherLocale(user);
+  return <AppShell user={user} locale={locale}>{children}</AppShell>;
 }
 
 function ShellFallback() {

@@ -103,6 +103,27 @@ Session’lar tasodifiy, bir martalik token va PostgreSQL’dagi SHA-256 token h
 | `npm run db:studio` | Prisma Studio |
 | `npm run data:import -- file.csv` | Google Sheets CSV import |
 
+## Vercel + Neon deploy
+
+1. Neon’da database oching va connection string’ni oling.
+2. Vercel project’ning **Settings → Environment Variables** bo‘limiga qo‘shing:
+
+   ```text
+   DATABASE_URL=postgresql://USER:PASSWORD@HOST-pooler.REGION.aws.neon.tech/DATABASE?sslmode=require
+   ```
+
+   Neon parol va host’ni GitHub’ga commit qilmang. Pooled host (`-pooler`) tavsiya etiladi.
+3. Bir martalik migratsiyani lokal terminalda Neon URL bilan bajaring:
+
+   ```bash
+   DATABASE_URL="neon-connection-url" npm run db:deploy
+   ```
+
+4. Vercel `npm install` paytida Prisma Client avtomatik generatsiya qilinadi. Build lokal PostgreSQL’ga ulanishni talab qilmaydi; faqat Neon URL ishlatiladi.
+5. Production’da demo seed, demo parollar va `ALLOW_INSECURE_LOCAL_COOKIES=true` ishlatilmaydi.
+
+Agar build `DATABASE_URL muhit o‘zgaruvchisi ko‘rsatilmagan` desa, Vercel’dagi environment variable build environment’da ham, production’da ham yo‘qilganini tekshiring. Agar `table does not exist` desa, `prisma migrate deploy` bajarilmagan.
+
 ## Production
 
 ```bash

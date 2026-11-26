@@ -9,7 +9,7 @@ import { getServerTime } from "@/lib/server-time";
 
 export const metadata: Metadata = { title: "Davomat" };
 
-type AttendanceSearchParams = { groupId?: string; teacherId?: string; from?: string; to?: string };
+type AttendanceSearchParams = { groupId?: string; teacherId?: string; from?: string; to?: string; date?: string };
 
 export default async function AttendancePage({ searchParams }: { searchParams: Promise<AttendanceSearchParams> }) {
   const user = await requireUser();
@@ -25,6 +25,6 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
   }
 
   if (user.role === "STUDENT") return <StudentAttendance user={user} />;
-  if (user.role === "TEACHER" && user.jobTitle === "Ustoz") return <TeacherAttendance user={user} />;
+  if (user.role === "TEACHER" && user.jobTitle === "Ustoz") return <TeacherAttendance user={user} date={params.date && isDateValue(params.date) ? params.date : undefined} />;
   redirect("/");
 }
