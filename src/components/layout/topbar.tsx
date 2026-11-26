@@ -14,7 +14,7 @@ import { getInitials, formatPhone } from "@/lib/format";
 import { useTeacherLocale } from "@/features/i18n/teacher-locale-provider";
 import { LanguageSwitcher } from "@/features/i18n/language-switcher";
 
-export function Topbar({ user, onMenuClick, onSearchClick }: { user: AuthUser; onMenuClick: () => void; onSearchClick: () => void }) {
+export function Topbar({ user, unreadCount = 0, onMenuClick, onSearchClick }: { user: AuthUser; unreadCount?: number; onMenuClick: () => void; onSearchClick: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, startLogout] = useTransition();
@@ -37,7 +37,7 @@ export function Topbar({ user, onMenuClick, onSearchClick }: { user: AuthUser; o
         <ThemeToggle />
         {user.role === "TEACHER" && <LanguageSwitcher />}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={t("Bildirishnomalar")}><Bell className="size-[18px]" /></Button></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="relative" aria-label={t("Bildirishnomalar")}><Bell className="size-[18px]" />{unreadCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-white">{unreadCount > 99 ? "99+" : unreadCount}</span>}</Button></DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 p-0">
             <DropdownMenuLabel className="p-4 text-sm font-semibold text-foreground">{t("Bildirishnomalar")}</DropdownMenuLabel>
             <DropdownMenuSeparator className="m-0" />

@@ -77,7 +77,11 @@ export async function loginAction(input: LoginFormValues, nextPath?: string): Pr
   } catch (error) {
     await logAuthError(error).catch(() => undefined);
     console.error("Login failed", error);
-    if ((error as { code?: string }).code === "ECONNREFUSED") {
+    const errorCode = (error as { code?: string }).code;
+    if (errorCode === "P2021") {
+      return { error: "Ma’lumotlar bazasi hali tayyor emas. Administrator Prisma migratsiyalarini ishga tushirishi kerak." };
+    }
+    if (["P1000", "P1001", "P1003", "P1017", "ECONNREFUSED"].includes(errorCode ?? "")) {
       return { error: "Ma’lumotlar bazasiga ulanib bo‘lmadi. Birozdan keyin qayta urinib ko‘ring." };
     }
     return { error: "Tizimga kirishda xatolik yuz berdi. Qayta urinib ko‘ring." };

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { TeacherLocaleProvider, useTeacherLocale } from "@/features/i18n/teacher-locale-provider";
 import type { TeacherLocale } from "@/features/i18n/teacher-dictionary";
 
-export function AppShell({ user, locale, children }: { user: AuthUser; locale: TeacherLocale; children: React.ReactNode }) {
+export function AppShell({ user, locale, unreadCount = 0, children }: { user: AuthUser; locale: TeacherLocale; unreadCount?: number; children: React.ReactNode }) {
   const { t } = useTeacherLocale();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -32,7 +32,7 @@ export function AppShell({ user, locale, children }: { user: AuthUser; locale: T
       <a href="#main-content" className="fixed left-4 top-3 z-[100] -translate-y-20 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-transform focus:translate-y-0">{t("Asosiy tarkibga o‘tish")}</a>
       <Sidebar user={user} collapsed={collapsed} onToggle={() => setCollapsed((value) => !value)} mobileOpen={mobileOpen} onMobileOpenChange={setMobileOpen} />
       <div className={cn("min-h-dvh transition-[padding] duration-200", collapsed ? "lg:pl-[76px]" : "lg:pl-[256px]")}>
-        <Topbar user={user} onMenuClick={() => setMobileOpen(true)} onSearchClick={() => setCommandOpen(true)} />
+        <Topbar user={user} unreadCount={unreadCount} onMenuClick={() => setMobileOpen(true)} onSearchClick={() => setCommandOpen(true)} />
         <main id="main-content" className="mx-auto w-full max-w-[1600px] p-4 md:p-6 lg:p-8">{children}</main>
       </div>
       <CommandPalette user={user} open={commandOpen} onOpenChange={setCommandOpen} />

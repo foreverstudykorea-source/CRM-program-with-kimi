@@ -3,11 +3,13 @@ import { requireUser } from "@/features/auth/session";
 import { AppShell } from "@/components/layout/app-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTeacherLocale } from "@/features/i18n/server-locale";
+import { db } from "@/lib/db";
 
 async function AuthenticatedShell({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
   const locale = await getTeacherLocale(user);
-  return <AppShell user={user} locale={locale}>{children}</AppShell>;
+  const unreadCount = user.role === "STUDENT" ? await db.message.count({ where: { recipientId: user.id, readAt: null } }) : 0;
+  return <AppShell user={user} locale={locale} unreadCount={unreadCount}>{children}</AppShell>;
 }
 
 function ShellFallback() {
