@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Banknote, ChartNoAxesCombined, CircleAlert, WalletCards } from "lucide-react";
+import { ArrowRight, Banknote, ChartNoAxesCombined, CircleAlert } from "lucide-react";
 import { requireRole } from "@/features/auth/session";
 import { getDebtors, getMonthlySummary, getMonthValue, getRevenueMonths } from "@/features/finance/queries";
 import { RevenueChart } from "@/features/finance/revenue-chart";

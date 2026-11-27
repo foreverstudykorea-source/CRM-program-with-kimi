@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle, ReceiptText } from "lucide-react";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ const methods = { CASH: "Naqd", CARD: "Karta", CLICK: "Click", PAYME: "Payme", B
 export function PaymentForm({ students, charges }: { students: StudentOption[]; charges: ChargeOption[] }) {
   const router = useRouter();
   const form = useForm<PaymentFormValues>({ resolver: zodResolver(paymentSchema), defaultValues: { studentId: students[0]?.id ?? "", chargeId: charges[0]?.id ?? "", amount: charges[0]?.outstanding ?? 0, method: "CASH", paidAt: getTashkentDateValue(), note: "" } });
-  const [studentId, chargeId] = form.watch(["studentId", "chargeId"]);
+  const [studentId, chargeId] = useWatch<PaymentFormValues>({ control: form.control, name: ["studentId", "chargeId"] as const });
   const availableCharges = charges.filter((charge) => charge.studentId === studentId);
   const selectedCharge = charges.find((charge) => charge.id === chargeId);
 
@@ -48,8 +48,8 @@ export function PaymentForm({ students, charges }: { students: StudentOption[]; 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 sm:grid-cols-2" noValidate>
       {form.formState.errors.root && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive sm:col-span-2">{form.formState.errors.root.message}</p>}
-      <div className="space-y-2"><Label htmlFor="studentId">O‘quvchi</Label><select id="studentId" className="h-11 w-full rounded-lg border border-input bg-card px-3 text-sm" value={studentId} onChange={(event) => changeStudent(event.target.value)} disabled={form.formState.isSubmitting}>{students.map((student) => <option key={student.id} value={student.id}>{student.fullName}</option>)}</select></div>
-      <div className="space-y-2"><Label htmlFor="chargeId">Oylik hisob</Label><select id="chargeId" className="h-11 w-full rounded-lg border border-input bg-card px-3 text-sm" value={chargeId} onChange={(event) => { form.setValue("chargeId", event.target.value); const charge = charges.find((item) => item.id === event.target.value); if (charge) form.setValue("amount", charge.outstanding); }} disabled={form.formState.isSubmitting}>{availableCharges.map((charge) => <option key={charge.id} value={charge.id}>{charge.month} · {charge.groupName} · {formatMoney(charge.outstanding)}</option>)}</select></div>
+      <div className="space-y-2"><Label htmlFor="studentId">O‘quvchi</Label><select id="studentId" className="h-11 w-full rounded-lg border border-input bg-card px-3 text-sm" value={String(studentId ?? "")} onChange={(event) => changeStudent(event.target.value)} disabled={form.formState.isSubmitting}>{students.map((student) => <option key={student.id} value={student.id}>{student.fullName}</option>)}</select></div>
+      <div className="space-y-2"><Label htmlFor="chargeId">Oylik hisob</Label><select id="chargeId" className="h-11 w-full rounded-lg border border-input bg-card px-3 text-sm" value={String(chargeId ?? "")} onChange={(event) => { form.setValue("chargeId", event.target.value); const charge = charges.find((item) => item.id === event.target.value); if (charge) form.setValue("amount", charge.outstanding); }} disabled={form.formState.isSubmitting}>{availableCharges.map((charge) => <option key={charge.id} value={charge.id}>{charge.month} · {charge.groupName} · {formatMoney(charge.outstanding)}</option>)}</select></div>
       <div className="space-y-2"><Label htmlFor="amount">Summa (UZS)</Label><Input id="amount" type="number" min={1} step={1000} inputMode="numeric" disabled={form.formState.isSubmitting} {...form.register("amount")} />{selectedCharge && <p className="text-xs text-muted-foreground">Qoldiq: {formatMoney(selectedCharge.outstanding)}</p>}{form.formState.errors.amount && <p className="text-xs text-destructive">{form.formState.errors.amount.message}</p>}</div>
       <div className="space-y-2"><Label htmlFor="method">To‘lov usuli</Label><select id="method" className="h-11 w-full rounded-lg border border-input bg-card px-3 text-sm" disabled={form.formState.isSubmitting} {...form.register("method")}>{Object.entries(methods).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
       <div className="space-y-2"><Label htmlFor="paidAt">To‘lov sanasi</Label><Input id="paidAt" type="date" disabled={form.formState.isSubmitting} {...form.register("paidAt")} /></div>

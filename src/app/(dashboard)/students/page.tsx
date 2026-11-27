@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/format";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { StudentsDirectory } from "@/features/students/students-directory";
+import { CreateStudentDialog } from "@/features/students/create-student-dialog";
 import type { StudentListItem } from "@/features/students/types";
 
 export const metadata: Metadata = { title: "O‘quvchilar" };
@@ -31,6 +32,7 @@ export default async function StudentsPage() {
     },
   });
 
+  const groups = await db.group.findMany({ where: { status: "ACTIVE" }, select: { id: true, name: true, course: { select: { monthlyPrice: true } } }, orderBy: { name: "asc" } });
   const data: StudentListItem[] = students.map((student) => {
     const profile = student.studentProfile;
     const groups = student.groupMemberships.map((membership) => membership.group.name);
@@ -53,7 +55,7 @@ export default async function StudentsPage() {
 
   return (
     <div>
-      <PageHeader title="O‘quvchilar" description="Jadvaldagi barcha o‘quvchilar, guruhlar, to‘lov holati va sotuv menejerlari." action={<Badge variant="secondary" className="px-3 py-1.5"><UsersRound />{activeCount} faol · {data.length} jami</Badge>} />
+      <PageHeader title="O‘quvchilar" description="Jadvaldagi barcha o‘quvchilar, guruhlar, to‘lov holati va sotuv menejerlari." action={<div className="flex flex-wrap items-center gap-2"><Badge variant="secondary" className="px-3 py-1.5"><UsersRound />{activeCount} faol · {data.length} jami</Badge><CreateStudentDialog groups={groups.map((group) => ({ id: group.id, name: group.name, monthlyPrice: group.course.monthlyPrice }))} /></div>} />
       <StudentsDirectory students={data} groups={Array.from(new Set(data.flatMap((student) => student.groups))).sort()} />
     </div>
   );

@@ -8,8 +8,8 @@ if (!connectionString) throw new Error("DATABASE_URL is required.");
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
 async function main() {
-  await prisma.course.updateMany({ where: { name: "Standard" }, data: { monthlyPrice: 250_000 } });
-  await prisma.course.updateMany({ where: { name: "Individual" }, data: { monthlyPrice: 500_000 } });
+  await prisma.course.updateMany({ where: { name: "Standard" }, data: { monthlyPrice: 690_000 } });
+  await prisma.course.updateMany({ where: { name: "Individual" }, data: { monthlyPrice: 690_000 } });
 
   const finance = await prisma.user.findUniqueOrThrow({ where: { phone: "+998901112234" }, select: { id: true } });
   const now = new Date();
