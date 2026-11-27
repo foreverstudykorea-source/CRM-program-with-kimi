@@ -11,6 +11,16 @@ if (hasLocalPostgres) {
   await import("./ensure-postgres.mjs");
 }
 
+const migration = spawnSync(process.execPath, [path.join(root, "node_modules", "prisma", "build", "index.js"), "migrate", "deploy"], {
+  cwd: root,
+  env: process.env,
+  stdio: "inherit",
+  windowsHide: true,
+});
+if (migration.status !== 0) {
+  process.exit(migration.status ?? 1);
+}
+
 const result = spawnSync(process.execPath, [path.join(root, "node_modules", "next", "dist", "bin", "next"), "build", "--webpack"], {
   cwd: root,
   env: process.env,

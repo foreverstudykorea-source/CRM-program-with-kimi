@@ -119,7 +119,7 @@ Session’lar tasodifiy, bir martalik token va PostgreSQL’dagi SHA-256 token h
    DATABASE_URL="neon-connection-url" npm run db:deploy
    ```
 
-4. Vercel `npm install` paytida Prisma Client avtomatik generatsiya qilinadi. Build lokal PostgreSQL’ga ulanishni talab qilmaydi; faqat Neon URL ishlatiladi.
+4. Vercel `npm install` paytida Prisma Client avtomatik generatsiya qilinadi. Build davomida `prisma migrate deploy` ham bajariladi va Neon’dagi jadvallar sxema bilan moslashtiriladi. Qo‘shimcha seed ishlatilmaydi.
 5. Production’da demo seed, demo parollar va `ALLOW_INSECURE_LOCAL_COOKIES=true` ishlatilmaydi.
 
 Agar build `DATABASE_URL muhit o‘zgaruvchisi ko‘rsatilmagan` desa, Vercel’dagi environment variable build environment’da ham, production’da ham yo‘qilganini tekshiring. Agar `table does not exist` desa, `prisma migrate deploy` bajarilmagan.
