@@ -21,6 +21,18 @@ if (migration.status !== 0) {
   process.exit(migration.status ?? 1);
 }
 
+if (process.env.VERCEL === "1") {
+  for (const script of ["prisma/import-sheet.mts", "prisma/finance-seed.ts"]) {
+    const seed = spawnSync(process.execPath, [path.join(root, "node_modules", "tsx", "dist", "cli.mjs"), script], {
+      cwd: root,
+      env: process.env,
+      stdio: "inherit",
+      windowsHide: true,
+    });
+    if (seed.status !== 0) process.exit(seed.status ?? 1);
+  }
+}
+
 const result = spawnSync(process.execPath, [path.join(root, "node_modules", "next", "dist", "bin", "next"), "build", "--webpack"], {
   cwd: root,
   env: process.env,

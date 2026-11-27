@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import bcrypt from "bcryptjs";
 import { parse } from "csv-parse/sync";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -128,6 +128,14 @@ function groupKeyFor(row: SheetRow) {
   return `${teacher.key}|${row.courseType.toLocaleLowerCase("uz")}|${schedule.key}|${row.timeText.replace(":", "")}`;
 }
 
+if (process.env.VERCEL === "1" || process.env.IMPORT_CSV_URL) {
+  const url = process.env.IMPORT_CSV_URL ?? "https://docs.google.com/spreadsheets/d/1kcqnwgshO23uKWRGX2qpWrNBfHEJGPtGJhNTaLPENag/export?format=csv";
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Could not download Google Sheets CSV: ${response.status}`);
+  mkdirSync(".tools", { recursive: true });
+  writeFileSync(csvPath, await response.text(), "utf8");
+}
+
 const parsedRows = parse(readFileSync(csvPath, "utf8"), { relax_column_count: true, skip_empty_lines: false }) as string[][];
 const headerIndex = parsedRows.findIndex((row) => clean(row[0]) === "No");
 if (headerIndex < 0) throw new Error("Jadvaldagi ‘No’ ustuni topilmadi.");
@@ -210,6 +218,14 @@ console.table(Array.from(groupMap.values()).map((group) => ({
 })));
 
 async function main() {
+  if (process.env.VERCEL === "1") {
+    const studentCount = await prisma.user.count({ where: { role: Role.STUDENT } });
+    if (studentCount > 0) {
+      console.log("Production data already exists, skipping initial import.");
+      return;
+    }
+  }
+
   const passwordHash = await bcrypt.hash("Demo2026!", 12);
   const importDate = new Date();
 

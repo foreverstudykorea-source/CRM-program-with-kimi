@@ -17,7 +17,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:check": "prisma validate",
-    "data:import": "tsx prisma/import-sheet.ts"
+    "data:import": "tsx prisma/import-sheet.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.8",
